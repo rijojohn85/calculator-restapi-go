@@ -2,7 +2,6 @@ package calculator
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -13,8 +12,13 @@ type InputParameters struct {
 	Number2 *int `json:"number2,omitempty" validate:"required"`
 }
 
+type Result struct {
+	Output int `json:"output"`
+}
+
 func ValidateInput(w http.ResponseWriter, r *http.Request) {
 	var input InputParameters
+	var result Result
 	validator := validator.New(validator.WithRequiredStructEnabled())
 
 	err := json.NewDecoder(r.Body).Decode(&input)
@@ -32,5 +36,21 @@ func ValidateInput(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Division by 0", http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("Num1: %d, Num2: %d, URL: %s\n", *input.Number1, *input.Number2, path)
+	// fmt.Printf("Num1: %d, Num2: %d, URL: %s\n", *input.Number1, *input.Number2, path)
+	switch path {
+	case "/add/":
+		result.Output = *input.Number1 + *input.Number2
+	case "/subtract/":
+		result.Output = *input.Number1 - *input.Number2
+	case "/multiply/":
+		result.Output = *input.Number1 * *input.Number2
+	case "/divide/":
+		result.Output = *input.Number1 / *input.Number2
+	default:
+		{
+			http.Error(w, "invalid path", http.StatusForbidden)
+			return
+		}
+	}
+	json.NewEncoder(w).Encode(result)
 }

@@ -2,6 +2,7 @@ package calculator
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -70,6 +71,77 @@ func TestValidiateInput(t *testing.T) {
 		ValidateInput(w, req)
 		assertError(t, *w, expectedError)
 	})
+	t.Run("test add", func(t *testing.T) {
+		postBody := []byte(`{"number1":1, "number2":2}`)
+		req := httptest.NewRequest("POST", "/add/", bytes.NewBuffer(postBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		ValidateInput(w, req)
+		statusCheck(t, *w)
+		var result Result
+		err := json.NewDecoder(w.Body).Decode(&result)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assertValues(t, 3, result.Output)
+	})
+	t.Run("test subtract", func(t *testing.T) {
+		postBody := []byte(`{"number1":2, "number2":1}`)
+		req := httptest.NewRequest("POST", "/subtract/", bytes.NewBuffer(postBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		ValidateInput(w, req)
+		statusCheck(t, *w)
+		var result Result
+		err := json.NewDecoder(w.Body).Decode(&result)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assertValues(t, 1, result.Output)
+	})
+	t.Run("test multiply", func(t *testing.T) {
+		postBody := []byte(`{"number1":2, "number2":3}`)
+		req := httptest.NewRequest("POST", "/multiply/", bytes.NewBuffer(postBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		ValidateInput(w, req)
+		statusCheck(t, *w)
+		var result Result
+		err := json.NewDecoder(w.Body).Decode(&result)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assertValues(t, 6, result.Output)
+	})
+	t.Run("test divide", func(t *testing.T) {
+		postBody := []byte(`{"number1":6, "number2":3}`)
+		req := httptest.NewRequest("POST", "/divide/", bytes.NewBuffer(postBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		ValidateInput(w, req)
+		statusCheck(t, *w)
+		var result Result
+		err := json.NewDecoder(w.Body).Decode(&result)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assertValues(t, 2, result.Output)
+	})
+	t.Run("test torig", func(t *testing.T) {
+		postBody := []byte(`{"number1":6, "number2":3}`)
+		req := httptest.NewRequest("POST", "/troig/", bytes.NewBuffer(postBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		ValidateInput(w, req)
+		assertError(t, *w, "invalid path")
+	})
+}
+
+func assertValues(t *testing.T, expected, got int) {
+	t.Helper()
+	if expected != got {
+		t.Errorf("Expected %v got %v", expected, got)
+	}
 }
 
 func assertError(t *testing.T, w httptest.ResponseRecorder, expectedError string) {
