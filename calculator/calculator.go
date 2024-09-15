@@ -52,5 +52,6 @@ func ValidateInput(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(result)
 }
