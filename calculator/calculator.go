@@ -7,18 +7,22 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type InputParameters struct {
-	Number1 *int `json:"number1,omitempty" validate:"required"`
-	Number2 *int `json:"number2,omitempty" validate:"required"`
+type Number interface {
+	int64 | float64
 }
 
-type Result struct {
-	Output int `json:"output"`
+type InputParameters[T Number] struct {
+	Number1 *T `json:"number1,omitempty" validate:"required"`
+	Number2 *T `json:"number2,omitempty" validate:"required"`
+}
+
+type Result[T Number] struct {
+	Output T `json:"output"`
 }
 
 func ValidateInput(w http.ResponseWriter, r *http.Request) {
-	var input InputParameters
-	var result Result
+	input := InputParameters{Number1: nil, Number2: nil}
+	result := Result{Output: 0}
 	validator := validator.New(validator.WithRequiredStructEnabled())
 
 	err := json.NewDecoder(r.Body).Decode(&input)
